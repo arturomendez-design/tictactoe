@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Totito</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #172554;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 30px 15px;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .contenedor {
+      max-width: 400px;
+      margin: auto;
+    }
+
+    .estado {
+      font-size: 22px;
+      margin: 25px 0;
+    }
+
+    .tablero {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px auto;
+    }
+
+    .casilla {
+      aspect-ratio: 1;
+      background: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 55px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .casilla:hover {
+      background: #dbeafe;
+    }
+
+    .jugadorX {
+      color: #2563eb;
+    }
+
+    .jugadorO {
+      color: #dc2626;
+    }
+
+    .marcador {
+      display: flex;
+      justify-content: space-around;
+      background: #1e3a8a;
+      padding: 15px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+
+    .marcador strong {
+      display: block;
+      font-size: 28px;
+      margin-top: 8px;
+    }
+
+    .boton {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .boton:hover {
+      background: #16a34a;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="contenedor">
+
+    <h1>🎮 Juego de Totito</h1>
+    <p>Juego para dos jugadores</p>
+
+    <div class="marcador">
+      <div>
+        Jugador X
+        <strong id="puntosX">0</strong>
+      </div>
+      <div>
+        Empates
+        <strong id="empates">0</strong>
+      </div>
+      <div>
+        Jugador O
+        <strong id="puntosO">0</strong>
+      </div>
+    </div>
+
+    <div class="estado" id="estado">
+      Turno del jugador X
+    </div>
+
+    <div class="tablero" id="tablero">
+      <button class="casilla" data-indice="0"></button>
+      <button class="casilla" data-indice="1"></button>
+      <button class="casilla" data-indice="2"></button>
+      <button class="casilla" data-indice="3"></button>
+      <button class="casilla" data-indice="4"></button>
+      <button class="casilla" data-indice="5"></button>
+      <button class="casilla" data-indice="6"></button>
+      <button class="casilla" data-indice="7"></button>
+      <button class="casilla" data-indice="8"></button>
+    </div>
+
+    <button class="boton" onclick="reiniciarJuego()">
+      Nueva partida
+    </button>
+
+  </div>
+
+  <script>
+    let tablero = ["", "", "", "", "", "", "", "", ""];
+    let jugadorActual = "X";
+    let juegoActivo = true;
+
+    let puntosX = 0;
+    let puntosO = 0;
+    let empates = 0;
+
+    const casillas = document.querySelectorAll(".casilla");
+    const estado = document.getElementById("estado");
+
+    const combinacionesGanadoras = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    casillas.forEach(casilla => {
+      casilla.addEventListener("click", jugar);
+    });
+
+    function jugar(evento) {
+      const indice = Number(evento.target.dataset.indice);
+
+      if (tablero[indice] !== "" || !juegoActivo) {
+        return;
+      }
+
+      tablero[indice] = jugadorActual;
+
+      evento.target.textContent = jugadorActual;
+      evento.target.classList.add(
+        jugadorActual === "X" ? "jugadorX" : "jugadorO"
+      );
+
+      if (verificarGanador()) {
+        estado.textContent = "¡Ganó el jugador " +
+          jugadorActual + "! 🏆";
+
+        juegoActivo = false;
+
+        if (jugadorActual === "X") {
+          puntosX++;
+          document.getElementById("puntosX").textContent =
+            puntosX;
+        } else {
+          puntosO++;
+          document.getElementById("puntosO").textContent =
+            puntosO;
+        }
+
+        return;
+      }
+
+      if (!tablero.includes("")) {
+        estado.textContent = "¡Empate! 🤝";
+        juegoActivo = false;
+        empates++;
+
+        document.getElementById("empates").textContent =
+          empates;
+        return;
+      }
+
+      jugadorActual = jugadorActual === "X" ? "O" : "X";
+      estado.textContent = "Turno del jugador " +
+        jugadorActual;
+    }
+
+    function verificarGanador() {
+      return combinacionesGanadoras.some(combinacion => {
+        return combinacion.every(indice => {
+          return tablero[indice] === jugadorActual;
+        });
+      });
+    }
+
+    function reiniciarJuego() {
+      tablero = ["", "", "", "", "", "", "", "", ""];
+      jugadorActual = "X";
+      juegoActivo = true;
+
+      estado.textContent = "Turno del jugador X";
+
+      casillas.forEach(casilla => {
+        casilla.textContent = "";
+        casilla.classList.remove("jugadorX", "jugadorO");
+      });
+    }
+  </script>
+
+</body>
+</html>
